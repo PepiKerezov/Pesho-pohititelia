@@ -13,7 +13,7 @@ typedef struct Vertex {
 // Edge structure
 typedef struct Edge {
     Vertex* destination;
-    float weight;
+    double weight;
     struct Edge* next;
 } Edge;
 

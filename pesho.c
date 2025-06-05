@@ -5,28 +5,6 @@
 #include "map.txt"
 #include "pesho.h"
 
-#define COORDINATES if (ch == '\n') {  \
-                tekY++; \
-                tekX = 0;  \
-            } else { \
-                tekX++; \
-            }
-
-
-#define ADDNODE     hashtag * data = (hashtag *)malloc(sizeof(hashtag)); \
-                    if(data == NULL) {  \
-                        printf("Error allocating memory");  \
-                    }   \
-                    data->x = tekX; \
-                    data->y = tekY; \
-                    list_add_end(&list, data);  
-
-
-typedef struct hashtag{
-    int x;
-    int y;
-}hashtag;
-
 
 void input(int* peshoJump, int* policeJump, char * path){
     printf("How many steps can Pesho jump: ");
@@ -73,20 +51,43 @@ Graph* makeGraph(char * path){
     return graph;
 }
 
-void addEdges(Graph * graph) {
-    Vertex * current = graph->vertices;
-    for (int i = 0; i < graph->vertex_count; i++)
-    {
-        for (int j = 0; j < graph->vertex_count; j++)
-        {
-            Vertex * current2 = graph->vertices;
-            if(current2 == current)
-                continue;
-            
+void addEdges(Graph *graph) {
+    Vertex *current = graph->vertices;
+
+    while (current != NULL) {
+        Vertex *current2 = graph->vertices;
+        while (current2 != NULL) {
+            if (current != current2) {
+                // Find minimum distance between points in current->data and current2->data
+                ListNode *list1 = (ListNode *)current->data;
+                ListNode *list2 = (ListNode *)current2->data;
+
+                double minDistance = -1.0;
+                for(;list1 != NULL;list1 = list1->next) {
+                    hashtag *point1 = (hashtag *)list1->data;
+                    list2 = (ListNode *)current2->data;  
+
+                    for(;list2 != NULL;list2 = list2->next) {
+                        hashtag *point2 = (hashtag *)list2->data;
+
+                        double dx = point1->x - point2->x;
+                        double dy = point1->y - point2->y;
+                        double dist = sqrt(dx * dx + dy * dy);
+
+                        if (minDistance < 0 || dist < minDistance) {
+                            minDistance = dist;
+                        }
+                    }
+
+                }
+                if (minDistance >= 0) {
+                    graph_add_edge(graph, current, current2, minDistance);
+                }
+            }
+            current2 = current2->next;
         }
-        
+        current = current->next;
     }
-    
 }
 
 int main(){

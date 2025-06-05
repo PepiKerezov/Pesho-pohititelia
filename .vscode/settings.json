@@ -59,6 +59,7 @@
   "files.associations": {
     "*.embeddedhtml": "html",
     "*.txt": "c",
-    "cstdlib": "cpp"
+    "cstdlib": "cpp",
+    "graph.h": "c"
   }
 }
