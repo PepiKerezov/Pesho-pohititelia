@@ -19,13 +19,19 @@ Vertex* graph_add_vertex(Graph* graph, void* data) {
 
     new_vertex->data = data;
     new_vertex->next = graph->vertices;
+    new_vertex->parent = NULL;
     new_vertex->edges = NULL;
 
+    // Set the id
+    new_vertex->id = graph->vertex_count;  // assign current count as id
+
+    // Add vertex to graph
     graph->vertices = new_vertex;
     graph->vertex_count++;
 
     return new_vertex;
 }
+
 
 Edge* graph_add_edge(Graph* graph, void* from_data, void* to_data, double weight) {
     if (graph == NULL) return NULL;
@@ -57,25 +63,6 @@ Edge* graph_add_edge(Graph* graph, void* from_data, void* to_data, double weight
     return new_edge;
 }
 
-void graph_print(const Graph* graph, void (*print_vertex)(const void*)) {
-    if (graph == NULL || print_vertex == NULL) return;
-
-    Vertex* current_vertex = graph->vertices;
-    while (current_vertex != NULL) {
-        print_vertex(current_vertex->data);
-        printf(" -> ");
-
-        Edge* current_edge = current_vertex->edges;
-        while (current_edge != NULL) {
-            print_vertex(current_edge->destination->data);
-            printf("(%d) ", current_edge->weight);
-            current_edge = current_edge->next;
-        }
-        printf("\n");
-        current_vertex = current_vertex->next;
-    }
-}
-
 void graph_free(Graph* graph, void (*free_data)(void*)) {
     if (graph == NULL) return;
 
@@ -103,42 +90,3 @@ void graph_free(Graph* graph, void (*free_data)(void*)) {
     free(graph);
 }
 
-Graph* graph_from_matrix(const int* matrix, size_t size, void** vertex_data) {
-    if (matrix == NULL || size == 0) return NULL;
-
-    Graph* graph = graph_create();
-    if (graph == NULL) return NULL;
-
-    Vertex** vertex_map = (Vertex**)malloc(size * sizeof(Vertex*));
-    if (vertex_map == NULL) {
-        graph_free(graph, NULL);
-        return NULL;
-    }
-
-    for (size_t i = 0; i < size; i++) {
-        void* data = vertex_data ? vertex_data[i] : NULL;
-        if (data == NULL) {
-            int* default_data = malloc(sizeof(int));
-            if (default_data == NULL) {
-                free(vertex_map);
-                graph_free(graph, free);
-                return NULL;
-            }
-            *default_data = (int)i;
-            data = default_data;
-        }
-        vertex_map[i] = graph_add_vertex(graph, data);
-    }
-
-    for (size_t i = 0; i < size; i++) {
-        for (size_t j = 0; j < size; j++) {
-            int weight = matrix[i * size + j];
-            if (weight != 0) {
-                graph_add_edge(graph, vertex_map[i]->data, vertex_map[j]->data, weight);
-            }
-        }
-    }
-
-    free(vertex_map);
-    return graph;
-}
